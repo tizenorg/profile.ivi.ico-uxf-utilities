@@ -2,16 +2,14 @@ Name:       ico-uxf-utilities
 Summary:    common utilities for ico uifw
 Version:    0.2.01
 Release:    1.1
-Group:		TO_BE/FILLED_IN
+Group:      Automotive/Libraries
 License:    Apache License, Version 2.0
 URL:        ""
 Source0:    %{name}-%{version}.tar.bz2
 
-BuildRequires: libwebsockets-devel >= 1.2
-BuildRequires: libdlog-devel
+BuildRequires: pkgconfig(libwebsockets) >= 1.2
+BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(glib-2.0)
-Requires: libwebsockets >= 1.2
-Requires: libdlog
 
 %description
 common utilities for ico uifw.
@@ -29,27 +27,23 @@ Development files for inter application communications.
 %setup -q -n %{name}-%{version}
 
 %build
-autoreconf --install
-
 %autogen
 
 %configure
 make %{?_smp_mflags}
 
 %install
-rm -rf %{buildroot}
 %make_install
-
-mkdir -p %{buildroot}/usr/lib/
 
 # include
 mkdir -p %{buildroot}/%{_includedir}/ico-util/
 cp -f include/ico_uws.h %{buildroot}/%{_includedir}/ico-util/
 
-%post
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
 
 %files
-
 %{_libdir}/*.so.*
 
 %files devel
