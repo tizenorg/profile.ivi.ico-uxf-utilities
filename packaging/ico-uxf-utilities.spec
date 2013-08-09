@@ -1,5 +1,5 @@
 Name:       ico-uxf-utilities
-Summary:    common utilities for ico uifw
+Summary:    Common utilities for ico uifw
 Version:    0.2.01
 Release:    1.1
 Group:      Automotive/Libraries
@@ -16,7 +16,7 @@ common utilities for ico uifw.
 
 %package devel
 Summary:  Development files for %{name}
-Group:    Development/Utility/Libraries
+Group:    Automotive/Development
 Requires: %{name} = %{version}-%{release}
 Requires: libwebsockets-devel
 
