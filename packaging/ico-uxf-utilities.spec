@@ -3,7 +3,7 @@ Summary:    common utilities for ico uifw
 Version:    0.2.01
 Release:    1.1
 Group:      Automotive/Libraries
-License:    Apache License, Version 2.0
+License:    Apache-2.0
 URL:        ""
 Source0:    %{name}-%{version}.tar.bz2
 
@@ -44,6 +44,7 @@ cp -f include/ico_uws.h %{buildroot}/%{_includedir}/ico-util/
 %postun -p /sbin/ldconfig
 
 %files
+%license LICENSE-2.0
 %{_libdir}/*.so.*
 
 %files devel
