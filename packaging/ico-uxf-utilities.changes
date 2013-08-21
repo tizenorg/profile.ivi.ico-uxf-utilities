@@ -1,2 +1,11 @@
+* Wed Aug 21 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> fd20bfe
+- Add LICENSE.
+- Fix spec file.
+-- Corrected license field.
+-- Correct package BuildRequires fields to address build errors.
+-- Corrected package group tags based on Tizen packaging guidelines.
+-- Add missing tag and scriptlets.
+-- Remove items that are not necessary.
+
 * Wed Jul 17 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> f508b53
 - Import initial.
