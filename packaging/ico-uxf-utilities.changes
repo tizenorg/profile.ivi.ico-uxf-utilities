@@ -1,5 +1,10 @@
+* Tue Aug 27 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> submit/tizen/20130823.164921@fba3847
+- 0.2.03 release.
+-- fix for - An error correction of the version number of the library.
+
 * Wed Aug 21 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> fd20bfe
 - Add LICENSE.
+- 0.2.02 release
 - Fix spec file.
 -- Corrected license field.
 -- Correct package BuildRequires fields to address build errors.

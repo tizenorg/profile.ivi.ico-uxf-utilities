@@ -1,6 +1,6 @@
 Name:       ico-uxf-utilities
 Summary:    Common utilities for ico uifw
-Version:    0.2.02
+Version:    0.2.03
 Release:    1.1
 Group:      Automotive/Libraries
 License:    Apache-2.0
