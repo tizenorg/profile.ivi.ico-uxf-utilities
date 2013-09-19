@@ -1,6 +1,6 @@
 Name:       ico-uxf-utilities
 Summary:    Common utilities for ico uifw
-Version:    0.2.03
+Version:    0.2.04
 Release:    1.1
 Group:      Automotive/Libraries
 License:    Apache-2.0
@@ -38,16 +38,21 @@ make %{?_smp_mflags}
 # include
 mkdir -p %{buildroot}/%{_includedir}/ico-util/
 cp -f include/ico_uws.h %{buildroot}/%{_includedir}/ico-util/
+cp -f include/ico_log.h %{buildroot}/%{_includedir}/ico-util/
 
-%post -p /sbin/ldconfig
+%post
+/sbin/ldconfig
+mkdir -p %{_localstatedir}/log/ico/
+chmod 0777 %{_localstatedir}/log/ico/
 
 %postun -p /sbin/ldconfig
 
 %files
 %license LICENSE-2.0
-%{_libdir}/*.so.*
+%{_libdir}/libico-util*
 
 %files devel
 %defattr(-,root,root,-)
 %{_includedir}/ico-util/ico_uws.h
-%{_libdir}/*.so
+%{_includedir}/ico-util/ico_log.h
+%{_libdir}/libico-util*

@@ -15,7 +15,7 @@ check_LTLIBRARIES = $(TESTS)
 check_PROGRAMS = tst_ico_uws_client tst_ico_uws_server tst_ico_uws_multi_client tst_ico_uws_multi_server
 
 test_common_lib = -lwebsockets
-test_target_lib = ../src/.libs/libico-util-com.so
+test_target_lib = ../src/.libs/libico-util.so
 
 tst_ico_uws_client_SOURCES = tst_ico_uws_client.c
 tst_ico_uws_client_CFLAGS = -I../include $(OPT_CFLAGS)
