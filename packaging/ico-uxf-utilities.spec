@@ -1,6 +1,6 @@
 Name:       ico-uxf-utilities
 Summary:    Common utilities for ico uifw
-Version:    0.2.04
+Version:    0.9.01
 Release:    1.1
 Group:      Automotive/Libraries
 License:    Apache-2.0
@@ -10,6 +10,8 @@ Source0:    %{name}-%{version}.tar.bz2
 BuildRequires: pkgconfig(libwebsockets) >= 1.2
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(glib-2.0)
+Requires: /usr/bin/mkdir
+Requires: /usr/bin/chmod
 
 %description
 common utilities for ico uifw.

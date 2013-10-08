@@ -11,7 +11,7 @@
 /**
  *  @file   ico_log.c
  *
- *  @brief  
+ *  @brief
  */
 /*------------------------------------------------------------------------*/
 
@@ -43,13 +43,14 @@
 
 static int  time_zone    = 99*60*60;    /*!< local time difference(sec)       */
 static int  log_level    = 0x7FFFFFFF;  /*!< output level debug log           */
-static bool flush_mode   = true;        /*!< flush mode flag                  */  
+static bool flush_mode   = true;        /*!< flush mode flag                  */
 static bool initialized  = false;       /*!< initialized flag                 */
 static FILE *log_fd      = NULL;        /*!< file descriptor of output debug log*/
+static int  log_stdout   = 0;           /*!< flag for log output to stdout    */
 static int  log_lines    = 0;           /*!< output lines                     */
 static char log_prog[32] = {0,};        /*!< name of output source module     */
 
-                                                                            
+
 /*------------------------------------------------------------------------*/
 /**
  *  @brief  printout log message
@@ -89,7 +90,7 @@ ico_log_print(int level, const char *fmt, ...)
             fflush(log_fd);
         }
     }
-    if (log_fd != stdout)   {
+    if (log_stdout == 0)    {
         log_lines ++;
     }
 }
@@ -112,7 +113,7 @@ ico_log_open(const char *prog)
 
     if (NULL != log_fd) {
         fflush(log_fd);
-        if (log_fd != stdout)   {
+        if (log_stdout == 0)    {
             fclose(log_fd);
         }
     }
@@ -120,6 +121,7 @@ ico_log_open(const char *prog)
     log_lines = 0;
 
     if ((! prog) || (*prog == 0)) {
+        log_stdout = 1;
         log_fd = stdout;
         log_prog[0] = 0;
         return;
@@ -129,6 +131,7 @@ ico_log_open(const char *prog)
         log_prog[sizeof(log_prog)-1] = 0;
     }
 #if ICO_LOG_STDOUT > 0
+    log_stdout = 1;
     log_fd = stdout;
 #else  /*ICO_LOG_STDOUT*/
     snprintf(sPath, sizeof(sPath)-1, "%s/%s.log%d",
@@ -150,6 +153,7 @@ ico_log_open(const char *prog)
 
     log_fd = fopen(sPath, "w");
     if (NULL == log_fd) {
+        log_stdout = 1;
         log_fd = stdout;
     }
     else if ((initialized == false) &&
@@ -174,7 +178,7 @@ ico_log_close(void)
 #if ICO_LOG_STDOUT == 0
     if (NULL != log_fd) {
         fflush(log_fd);
-        if (log_fd != stdout) {
+        if (log_stdout == 0)    {
             fclose(log_fd);
         }
         log_fd = (FILE *)NULL;

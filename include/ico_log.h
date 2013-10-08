@@ -7,13 +7,13 @@
  *
  */
 
-/*========================================================================*/    
+/*========================================================================*/
 /**
  *  @file   ico_log.h
  *
  *  @brief  debug log function
  */
-/*========================================================================*/    
+/*========================================================================*/
 #ifndef __ICO_LOG_H__
 #define __ICO_LOG_H__
 
@@ -30,7 +30,7 @@ extern "C" {
                            /**!< Directory name of Log destination */
 
 /* Maximum lines/files */
-#define ICO_LOG_MAXLINES    10000
+#define ICO_LOG_MAXLINES    20000
                             /**!< Maximum output lines of log file  */
 #define ICO_LOG_MAXFILES    6
                             /**!< Maximum number of the log file    */
