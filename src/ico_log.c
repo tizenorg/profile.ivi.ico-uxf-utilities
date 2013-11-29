@@ -63,7 +63,7 @@ static char log_prog[32] = {0,};        /*!< name of output source module     */
 ICO_API void
 ico_log_print(int level, const char *fmt, ...)
 {
-    if (log_level < level) {
+    if (!(log_level & level)) {
         return;
     }
     va_list     list;

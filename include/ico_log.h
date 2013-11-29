@@ -36,21 +36,34 @@ extern "C" {
                             /**!< Maximum number of the log file    */
 
 /* Log output level */
-#define ICO_LOG_DEBUG       0x0080  /**!< Debug write */
-#define ICO_LOG_INFO        0x0040  /**!< Information */
-#define ICO_LOG_WARNING     0x0010  /**!< Warning     */
-#define ICO_LOG_CRITICAL    0x0008  /**!< Critical    */
-#define ICO_LOG_ERROR       0x0004  /**!< Error       */
+#define ICO_LOG_LVL_PRF     0x0200  /**!< Performance */
+#define ICO_LOG_LVL_TRA     0x0100  /**!< Trace       */
+#define ICO_LOG_LVL_DBG     0x0080  /**!< Debug write */
+#define ICO_LOG_LVL_INF     0x0040  /**!< Information */
+#define ICO_LOG_LVL_WRN     0x0010  /**!< Warning     */
+#define ICO_LOG_LVL_CRI     0x0008  /**!< Critical    */
+#define ICO_LOG_LVL_ERR     0x0004  /**!< Error       */
 
 /* Log output flush */
 #define ICO_LOG_FLUSH       0x4000  /**!< Log outout with log flush     */
 #define ICO_LOG_NOFLUSH     0x2000  /**!< Log output without log flush  */
 
+#define ICO_PRF(fmt,...)                        \
+{                                               \
+    ico_log_print(ICO_LOG_LVL_PRF,              \
+                  "%s> " fmt " (%s,%s:%d)\n",   \
+                  ico_get_str_cur_time("PRF"),  \
+                  ##__VA_ARGS__,                \
+                  __func__,                     \
+                  __FILE__,                     \
+                  __LINE__);                    \
+}
+
 #define ICO_TRA(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_DEBUG,                \
+    ico_log_print(ICO_LOG_LVL_TRA,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
-                  ico_get_str_cur_time("DBG"),  \
+                  ico_get_str_cur_time("TRA"),  \
                   ##__VA_ARGS__,                \
                   __func__,                     \
                   __FILE__,                     \
@@ -59,7 +72,7 @@ extern "C" {
 
 #define ICO_DBG(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_DEBUG,                \
+    ico_log_print(ICO_LOG_LVL_DBG,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
                   ico_get_str_cur_time("DBG"),  \
                   ##__VA_ARGS__,                \
@@ -70,7 +83,7 @@ extern "C" {
 
 #define ICO_INF(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_INFO,                 \
+    ico_log_print(ICO_LOG_LVL_INF,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
                   ico_get_str_cur_time("INF"),  \
                   ##__VA_ARGS__,                \
@@ -81,7 +94,7 @@ extern "C" {
 
 #define ICO_WRN(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_WARNING,              \
+    ico_log_print(ICO_LOG_LVL_WRN,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
                   ico_get_str_cur_time("WRN"),  \
                   ##__VA_ARGS__,                \
@@ -92,7 +105,7 @@ extern "C" {
 
 #define ICO_CRI(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_CRITICAL,             \
+    ico_log_print(ICO_LOG_LVL_CRI,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
                   ico_get_str_cur_time("CRI"),  \
                   ##__VA_ARGS__,                \
@@ -103,7 +116,7 @@ extern "C" {
 
 #define ICO_ERR(fmt,...)                        \
 {                                               \
-    ico_log_print(ICO_LOG_ERROR,                \
+    ico_log_print(ICO_LOG_LVL_ERR,              \
                   "%s> " fmt " (%s,%s:%d)\n",   \
                   ico_get_str_cur_time("ERR"),  \
                   ##__VA_ARGS__,                \

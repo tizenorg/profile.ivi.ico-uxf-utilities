@@ -9,10 +9,11 @@ noinst_PROGRAMS =		\
 	tst_ico_uws_client	\
 	tst_ico_uws_server	\
 	tst_ico_uws_multi_client \
-	tst_ico_uws_multi_server
+	tst_ico_uws_multi_server \
+	tst_ico_log
 
 check_LTLIBRARIES = $(TESTS)
-check_PROGRAMS = tst_ico_uws_client tst_ico_uws_server tst_ico_uws_multi_client tst_ico_uws_multi_server
+check_PROGRAMS = tst_ico_uws_client tst_ico_uws_server tst_ico_uws_multi_client tst_ico_uws_multi_server tst_ico_log
 
 test_common_lib = -lwebsockets
 test_target_lib = ../src/.libs/libico-util.so
@@ -33,5 +34,11 @@ tst_ico_uws_multi_server_SOURCES = tst_ico_uws_multi_server.c
 tst_ico_uws_multi_server_CFLAGS = -I../include $(OPT_CFLAGS)
 tst_ico_uws_multi_server_LDADD = $(test_target_lib) $(OPT_LIBS) $(test_common_lib)
 
-EXTRA_DIST = run_test.sh
+# tst_ico_log
+test_ico_log_target_lib = ../src/.libs/libico-log.so
+tst_ico_log_SOURCES = tst_ico_log.c
+tst_ico_log_CFLAGS = -I../include $(OPT_CFLAGS)
+tst_ico_log_LDADD = $(test_target_lib) $(OPT_LIBS)
+
+EXTRA_DIST = run_test.sh run_test_ico_log.sh
 

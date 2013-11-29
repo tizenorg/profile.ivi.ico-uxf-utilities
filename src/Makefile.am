@@ -5,7 +5,8 @@ libico_util_la_LIBADD =  $(OPT_LIBS) -lwebsockets
 libico_util_la_LDFLAGS = -version-info 0:9:0
 libico_util_la_SOURCES =          \
 	ico_uws.c	\
-	ico_log.c
+	ico_log.c   \
+	ico_dbus_amb_efl.c
 
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS = $(GCC_CFLAGS)	\

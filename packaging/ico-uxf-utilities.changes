@@ -1,8 +1,6 @@
-* Tue Oct 08 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> accepted/tizen/20130919.204322@558ccea
-- 0.9.01 release
--- change version number from 0.2.x to 0.9.x
--- Fix for TIVI-1940 - /var/log/ico directory doesn't create when creating snapshot image
--- fox for - The largest-capacity limit of the log file does not work.
+* Fri Nov 29 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> ivi_oct_m2@01a342a
+- 0.9.04 release
+-- Addition: DBus API for AMB.
 
 * Thu Sep 19 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> accepted/tizen/20130911.005417@250001b
 - 0.2.04 release.
