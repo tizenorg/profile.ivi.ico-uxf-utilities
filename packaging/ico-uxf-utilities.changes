@@ -1,3 +1,8 @@
+* Thu Dec 26 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> submit/tizen/20131219.041934@fb2d235
+- 0.9.06 release
+-- revise: add manifest file for SMACK label setting.
+-- add: ico_dbus_amb_find_property() API.
+
 * Fri Nov 29 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> ivi_oct_m2@01a342a
 - 0.9.04 release
 -- Addition: DBus API for AMB.

@@ -2,6 +2,7 @@
 #include <E_DBus.h>
 #include <stdio.h>
 
+#include "ico_log.h"
 #include "ico_dbus_amb_efl.h"
 
 #define LATER1024
@@ -28,6 +29,7 @@ enum MethodType {
     METHOD_GETHISTORY,
     METHOD_SUBSCRIBE,
     METHOD_UNSUBSCRIBE,
+    METHOD_FIND,
 };
 
 struct _method_args {
@@ -38,6 +40,7 @@ struct _method_args {
     union dbus_value_variant value;
     ico_dbus_amb_getcb getcb;
     ico_dbus_amb_noticb noticb;
+    ico_dbus_amb_findcb findcb;
     enum MethodType mtype;
     void *user_data;
 };
@@ -113,10 +116,6 @@ ICO_API int ico_dbus_amb_set(const char *objectname, const char *property, int z
     if (property == NULL || strlen(property) == 0) {
         return -1;
     }
-    if (type == DBUST_TYPE_STRING && value.sval == NULL) {
-        return -1;
-    }
-
     args = (struct _method_args*)malloc(sizeof(struct _method_args));
     if (args == NULL) {
         return -1;
@@ -211,6 +210,36 @@ ICO_API int ico_dbus_amb_gethistory(const char *objectname, const char *property
 }
 #endif
 
+ICO_API int ico_dbus_amb_find_property(const char *objectname,
+                                       const char *property,
+                                       int zone,
+                                       dbus_type type,
+                                       ico_dbus_amb_findcb cb,
+                                       void *user_data)
+{
+    struct _method_args *args;
+
+    if (objectname == NULL || strlen(objectname) == 0) {
+        return -1;
+    }
+    if (property == NULL || strlen(property) == 0) {
+        return -1;
+    }
+    args = (struct _method_args*)malloc(sizeof(struct _method_args));
+    if (args == NULL) {
+        return -1;
+    }
+    args->objectname = strdup(objectname);
+    args->property = strdup(property);
+    args->findcb = cb;
+    args->zone = zone;
+    args->dtype = type;
+    args->mtype = METHOD_FIND;
+    args->user_data = user_data;
+
+    return getproperty(args);
+}
+
 int getproperty(struct _method_args *args) {
     DBusMessage *msg;
 #ifdef LATER1024
@@ -242,14 +271,31 @@ void getproperty_cb(void *data, DBusMessage *msg, DBusError *error) {
     struct _signal_handler *_sig_handler, *head;
     struct timeval tv;
 
+    args = (struct _method_args*)data;
+
     if (!msg) {
-        if (error) {
-            fprintf(stderr, "%s: %s\n", error->name, error->message);
+        if (NULL != args && NULL != error) {
+            ICO_ERR("FindProperty[%s]: %s : %s", args->property,
+                    error->name, error->message);
+            if (METHOD_FIND == args->mtype) {
+                ico_dbus_error_t ico_error;
+                ico_error.name = error->name;
+                ico_error.message = error->message;
+                if (NULL != args->findcb) {
+                    args->findcb(args->objectname, args->property, args->dtype,
+                                 args->user_data, &ico_error);
+                }
+                free(args->objectname);
+                free(args->property);
+                free(args);
+            }
+        }
+        else {
+            ICO_ERR("FindProperty: %s : %s", error->name, error->message);
         }
         return;
     }
     dbus_error_init(&e);
-    args = (struct _method_args*)data;
 
     dbus_message_get_args(msg, &e, DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID);
     //printf("Object Path:%s\n", path);
@@ -338,6 +384,15 @@ void getproperty_cb(void *data, DBusMessage *msg, DBusError *error) {
         }
         break;
     case METHOD_UNSUBSCRIBE :
+        break;
+    case METHOD_FIND :
+        if (NULL != args->findcb) {
+            args->findcb(args->objectname, args->property, args->dtype,
+                         args->user_data, NULL);
+            free(args->objectname);
+            free(args->property);
+            free(args);
+        }
         break;
     default:
         break;

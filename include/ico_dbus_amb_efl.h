@@ -22,8 +22,20 @@ union dbus_value_variant {
         char *sval;
 };
 
+typedef struct _ico_dbus_error
+{
+  const char *name;    /**< public error name field */
+  const char *message; /**< public error message field */
+} ico_dbus_error_t;
+
 typedef void (*ico_dbus_amb_getcb)(const char *objectname, const char *property, dbus_type type, union dbus_value_variant value, void *user_data);
 typedef void (*ico_dbus_amb_noticb)(const char *objectname, const char *property, dbus_type type, union dbus_value_variant value, int sequence, struct timeval tv, void *user_data);
+
+typedef void (*ico_dbus_amb_findcb)(const char *objectname,
+                                    const char *property,
+                                    dbus_type type,
+                                    void *user_data,
+                                    ico_dbus_error_t *error);
 
 int ico_dbus_amb_start(void);
 int ico_dbus_amb_end(void);
@@ -33,7 +45,12 @@ int ico_dbus_amb_subscribe(const char *objectname, const char *property, int zon
 int ico_dbus_amb_unsubscribe(const char *objectname, const char *property, int zone);
 //int ico_dbus_amb_gethistory(const char *objectname, const char *property, int zone);
 //int ico_dbus_amb_getlist(void);
-
+int ico_dbus_amb_find_property(const char *objectname,
+                               const char *property,
+                               int zone,
+                               dbus_type type,
+                               ico_dbus_amb_findcb cb,
+                               void *user_data);
 #ifdef __cplusplus
 }
 #endif
