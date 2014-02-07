@@ -206,7 +206,7 @@ tst_set_evt_callback()
 {
     int ret;
     char *ret_str = TEST_OK;
-    
+
     /* set callback */
     set_cb_flag = SET_FLAG;
     ret = ico_uws_set_event_cb(context, tst_uws_callback, NULL);
@@ -227,14 +227,20 @@ static void
 tst_unset_evt_callback()
 {
     char *ret_str = TEST_OK;
-    
+    char *uri;
+
     /* unset callback */
     ico_uws_unset_event_cb(context);
     set_cb_flag = UNSET_FLAG;
     num_call_cb = 0;
 
     /* occurs the error event */
-    (void)ico_uws_get_uri(NULL);
+    printf("-- Occurs the error event to test unset_event_cb\n");
+    uri = ico_uws_get_uri(NULL);
+    if (uri == NULL) {
+        printf("-- Error event happened. (ico_uws_get_uri return Errror)\n");
+    }
+
     sleep(SLEEP_TIME);
     if (num_call_cb > 0) {
         ret_str = TEST_NG;

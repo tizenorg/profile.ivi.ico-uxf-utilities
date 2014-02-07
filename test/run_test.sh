@@ -5,21 +5,40 @@
 # Setting value
 #
 ########################
+
+# API Tests Data (information, num of test items)
+### (1) 1 server / 1 client
+### (2) 1 server / 2 client
+### (3) 2 server / 1 client (2 thread)
+### (4) 1 server (2 thread) / 1 client (2 thread)
+### (5) 1 server (2 thread) / 2 client (2 process)
+test_list=(
+ "1 server, 1 client"
+ "1 server, 2 clients"
+ "2 server, multi client"
+ "multi server, multi client"
+ "multi server, 2 clients"
+)
+
+# number of test items (Test(1) Test(2) ..)
+num_server_test=(15 22 15 18 18)
+num_client_test=(11 11 18 18 11)
+
 # directory to put test's result in
 rslt_dir="./result"
-log_dir="${rslt_dir}/full_log"
-# number of tests
-num_tst_loop=1
+log_dir="${rslt_dir}/`date '+%Y%m%d_%H%M'`"
+
+# number of loop tests
+num_loop=1
 
 # test log tag
 tst_tag="TestCase"
 
-# log file name (common)
-date_str=`date '+%Y%m%d'`
-time_str=`date '+%H%M'`
-file_str="${date_str}_${time_str}.txt"
-srv_file_str="server_${file_str}"
-clt_file_str="client_${file_str}"
+# log file name
+log_server="server.txt"
+log_client="client.txt"
+log_total="${log_dir}/`date '+%Y%m%d'`_total.txt"
+log_summary="${log_dir}/`date '+%Y%m%d'`_summary.txt"
 
 # set library path
 export LD_LIBRARY_PATH=../src/.libs:$LD_LIBRARY_PATH
@@ -44,7 +63,7 @@ fi
 ########################
 if [ $# -ne 0 ]; then
     if expr "$1" : '[0-9]*' > /dev/null ; then
-        num_tst_loop=$1
+        num_loop=$1
     fi
 fi
 
@@ -64,6 +83,8 @@ kill_old_proc()
 
 check_srv_no_exist()
 {
+	local l_id=0
+
     while :
     do
         proc_srv=`pgrep -lf "$1"`
@@ -71,7 +92,13 @@ check_srv_no_exist()
             break
         fi
         # sleep while process of server does not exist
-        usleep 100000
+		sleep 0.001
+
+		l_id=`expr ${l_id} + 1`
+		if [ ${l_id} -gt 500 ]; then
+			echo "Error: Server does not exist"
+			exit 1
+		fi
     done
 }
 
@@ -88,44 +115,69 @@ check_srv_exist()
     done
 }
 
+print_title()
+{
+    local l_type="$1"   ## start/end
+    local l_num="$2"    ## number of Test
+    local l_info="$3"   ## test information
+
+    echo "=== API Test (${l_num}) <<${l_info}>> ${l_type} ===" | tee -a ${log_total}
+    echo "" >> ${log_total}
+
+    if [ "${l_type}" = "End" ]; then
+        echo "" | tee -a ${log_total}
+    fi
+}
+
 print_result()
 {
-    local l_type="$1"
+    local l_type="$1"   ## server/client
     local l_log="$2"
-    local l_log_total="$3"
+    local l_num="$3"    ## number of Test
     local l_cnt_ok=0
     local l_cnt_ng=0
     local l_str=""
 
+    # get number of test items
+    local l_item=0
+    local l_id=`expr ${l_num} - 1`
+    case ${l_type} in
+        *Server*)
+            l_item="${num_server_test[${l_id}]}" ;;
+        *)
+            l_item="${num_client_test[${l_id}]}" ;;
+    esac
+    l_item=`expr ${l_item} \* ${num_loop}`
+
     # title
-    echo "" | tee -a ${l_log_total}
-    echo "----- ${l_type} result -----" | tee -a ${l_log_total}
+    echo "----- ${l_type} result -----" | tee -a ${log_total}
+
     # count OK/NG, and output console and file
     l_cnt_ok=`grep ${tst_tag} ${l_log} | grep "OK" | wc -l`
     l_cnt_ng=`grep ${tst_tag} ${l_log} | grep "NG" | wc -l`
-    l_str="<<Results Total>> OK: ${l_cnt_ok}, NG: ${l_cnt_ng}"
-    l_str="${l_str} (num of tests: ${num_tst_loop})"
-    echo "${l_str}" | tee -a ${l_log_total}
+    l_str="API Test ($3) <<Results>> OK: ${l_cnt_ok}, NG: ${l_cnt_ng} [${l_type}, Total Items: ${l_item}]"
+
+    echo "${l_str}" | tee -a ${log_total}
+
     # grep test result, and output to file
-    grep ${tst_tag} ${l_log} | tee -a ${l_log_total}
+    grep ${tst_tag} ${l_log} >> ${log_total}
 }
 
 exec_test()
 {
-    local l_tst_no="0$3"
+    local l_tst_no="$3"
     local l_app_srv="./$1"
     local l_app_clt="./$2"
 
-    local l_log_srv="${log_dir}/tst${l_tst_no}_${srv_file_str}"
-    local l_log_clt="${log_dir}/tst${l_tst_no}_${clt_file_str}"
-    local l_log_total="${rslt_dir}/tst${l_tst_no}_${file_str}"
+    local l_log_srv="${log_dir}/tst0${l_tst_no}_${log_server}"
+    local l_log_clt="${log_dir}/tst0${l_tst_no}_${log_client}"
 
     # kill old process if exists
     kill_old_proc
 
     sleep 1
 
-    for i in `seq 1 ${num_tst_loop}`
+    for i in `seq 1 ${num_loop}`
     do
         # execute server
         ${l_app_srv} >> ${l_log_srv} &
@@ -138,29 +190,28 @@ exec_test()
         check_srv_exist ${l_app_srv}
     done
 
-    print_result "Server" ${l_log_srv} ${l_log_total}
-    print_result "Client" ${l_log_clt} ${l_log_total}
+    print_result "Server" ${l_log_srv} ${l_tst_no}
+    print_result "Client" ${l_log_clt} ${l_tst_no}
     sleep 1
 }
 
 exec_test_multi_clt()
 {
-    local l_tst_no="0$4"
+    local l_tst_no="$4"
     local l_app_srv="./$1"
     local l_app_clt="./$2"
     local l_app_clt_sec="./$3"
 
-    local l_log_srv="${log_dir}/tst${l_tst_no}_${srv_file_str}"
-    local l_log_clt="${log_dir}/tst${l_tst_no}_client0_${file_str}"
-    local l_log_clt_sec="${log_dir}/tst${l_tst_no}_client1_${file_str}"
-    local l_log_total="${rslt_dir}/tst${l_tst_no}_${file_str}"
+    local l_log_srv="${log_dir}/tst0${l_tst_no}_${log_server}"
+    local l_log_clt="${log_dir}/tst0${l_tst_no}_no0_${log_client}"
+    local l_log_clt_sec="${log_dir}/tst0${l_tst_no}_no1_${log_client}"
 
     # kill old process if exists
     kill_old_proc
 
     sleep 1
 
-    for i in `seq 1 ${num_tst_loop}`
+    for i in `seq 1 ${num_loop}`
     do
         # execute server
         ${l_app_srv} >> ${l_log_srv} &
@@ -168,41 +219,39 @@ exec_test_multi_clt()
         check_srv_no_exist ${l_app_srv}
         # execute client
         ${l_app_clt} >> ${l_log_clt} &
-        usleep 100
         ${l_app_clt_sec} >> ${l_log_clt_sec}
 
         # sleep while process of server exists
         check_srv_exist ${l_app_srv}
     done
 
-    print_result "Server" ${l_log_srv} ${l_log_total}
-    print_result "Client 0" ${l_log_clt} ${l_log_total}
-    print_result "Client 1" ${l_log_clt_sec} ${l_log_total}
+    print_result "Server" ${l_log_srv} ${l_tst_no}
+    print_result "Client 0" ${l_log_clt} ${l_tst_no}
+    print_result "Client 1" ${l_log_clt_sec} ${l_tst_no}
     sleep 1
 }
 
 exec_test_multi_srv()
 {
-    local l_tst_no="0$4"
+    local l_tst_no="$4"
     local l_app_srv="./$1"
     local l_app_srv_sec="./$2"
     local l_app_clt="./$3"
 
-    local l_log_srv="${log_dir}/tst${l_tst_no}_server0_${file_str}"
-    local l_log_srv_sec="${log_dir}/tst${l_tst_no}_server0_${file_str}"
-    local l_log_clt="${log_dir}/tst${l_tst_no}_${clt_file_str}"
-    local l_log_total="${rslt_dir}/tst${l_tst_no}_${file_str}"
+    local l_log_srv="${log_dir}/tst0${l_tst_no}_no0_${log_server}"
+    local l_log_srv_sec="${log_dir}/tst0${l_tst_no}_no1_${log_server}"
+    local l_log_clt="${log_dir}/tst0${l_tst_no}_${log_client}"
 
     # kill old process if exists
     kill_old_proc
 
     sleep 1
 
-    for i in `seq 1 ${num_tst_loop}`
+    for i in `seq 1 ${num_loop}`
     do
         # execute server
         ${l_app_srv} >> ${l_log_srv} &
-        usleep 500
+		sleep 0.01
         ${l_app_srv_sec} >> ${l_log_srv_sec} &
         # sleep while process of server does not exist
         check_srv_no_exist ${l_app_srv}
@@ -215,117 +264,63 @@ exec_test_multi_srv()
         check_srv_exist ${l_app_srv_sec}
     done
 
-    print_result "Server 0" ${l_log_srv} ${l_log_total}
-    print_result "Server 1" ${l_log_srv_sec} ${l_log_total}
-    print_result "Client" ${l_log_clt} ${l_log_total}
+    print_result "Server 0" ${l_log_srv} ${l_tst_no}
+    print_result "Server 1" ${l_log_srv_sec} ${l_tst_no}
+    print_result "Client" ${l_log_clt} ${l_tst_no}
     sleep 1
 }
 
 ########################
 #
-# Test Start
+# API Test Main
 #
 ########################
 echo ""
 echo "=== API Test Start ==="
 
-########################
-#
-# API Test (1)
-# 1 server / 1 client
-#
-########################
-# application
-app_srv="tst_ico_uws_server -p 8080"
-app_clt="tst_ico_uws_client -p 8080"
+total=${#test_list[*]}
+id=0
+while [ $id -lt ${total} ];
+do
+    info="${test_list[$id]}"
+    id=`expr $id + 1`
 
-# test & output result
+    print_title "Start" "${id}" "${info}"
+
+    # exec test
+    if [ ${id} -eq "1" ]; then
+        app_srv="tst_ico_uws_server -p 8080"
+        app_clt="tst_ico_uws_client -p 8080"
+        exec_test "${app_srv}" "${app_clt}" ${id}
+    elif [ ${id} -eq "2" ]; then
+        app_srv="tst_ico_uws_server -p 8080"
+        app_clt="tst_ico_uws_client -p 8080"
+        exec_test_multi_clt "${app_srv}" "${app_clt}" "${app_clt}" ${id}
+    elif [ ${id} -eq "3" ]; then
+        app_srv="tst_ico_uws_server -p 8080"
+        app_srv_sec="tst_ico_uws_server -p 9090"
+        app_clt="tst_ico_uws_multi_client"
+        exec_test_multi_srv "${app_srv}" "${app_srv_sec}" "${app_clt}" ${id}
+    elif [ ${id} -eq "4" ]; then
+        app_srv="tst_ico_uws_multi_server"
+        app_clt="tst_ico_uws_multi_client"
+        exec_test "${app_srv}" "${app_clt}" ${id}
+    elif [ ${id} -eq "5" ]; then
+        app_srv="tst_ico_uws_multi_server"
+        app_clt="tst_ico_uws_client -p 8080"
+        app_clt_sec="tst_ico_uws_client -p 9090"
+        exec_test_multi_clt "${app_srv}" "${app_clt}" "${app_clt_sec}" ${id}
+    fi
+
+    print_title "End" "${id}" "${info}"
+done
+
 echo ""
-tst_no=1
-echo "=== API Test ($tst_no) <<1 server, 1 client>> Start ==="
-exec_test "${app_srv}" "${app_clt}" ${tst_no}
-echo "=== API Test ($tst_no) <<1 server, 1 client>> End ==="
-
-
-########################
-#
-# API Test (2)
-# 1 server / 2 client
-#
-########################
-# application
-app_srv="tst_ico_uws_server -p 8080"
-app_clt="tst_ico_uws_client -p 8080"
-
-# test & output result
 echo ""
-tst_no=2
-echo "=== API Test ($tst_no) <<1 server, 2 client>> Start ==="
-exec_test_multi_clt "${app_srv}" "${app_clt}" "${app_clt}" ${tst_no}
-echo "=== API Test ($tst_no) <<1 server, 2 client>> End ==="
 
-
-########################
-#
-# API Test (3)
-# 2 server / 1 client (2 thread)
-#
-########################
-# application
-app_srv="tst_ico_uws_server -p 8080"
-app_srv_sec="tst_ico_uws_server -p 9090"
-app_clt="tst_ico_uws_multi_client"
-
-# test & output result
+echo "[Summary] Results of API Tests (${num_loop} Loops)" | tee -a ${log_summary}
+grep "Total" ${log_total} | tee -a ${log_summary}
 echo ""
-tst_no=3
-echo "=== API Test ($tst_no) <<2 server, 1 client>> Start ==="
-exec_test_multi_srv "${app_srv}" "${app_srv_sec}" "${app_clt}" ${tst_no}
-echo "=== API Test ($tst_no) <<2 server, 1 client>> End ==="
 
-
-########################
-#
-# API Test (4)
-# 1 server (2 thread) / 1 client (2 thread)
-#
-########################
-# application
-app_srv="tst_ico_uws_multi_server"
-app_clt="tst_ico_uws_multi_client"
-
-# test & output result
-echo ""
-tst_no=4
-echo "=== API Test ($tst_no) <<multi server, multi client>> Start ==="
-exec_test "${app_srv}" "${app_clt}" ${tst_no}
-echo "=== API Test ($tst_no) <<multi server, multi client>> End ==="
-
-
-########################
-#
-# API Test (5)
-# 1 server (2 thread) / 2 client (2 process)
-#
-########################
-# application
-app_srv="tst_ico_uws_multi_server"
-app_clt="tst_ico_uws_client -p 8080"
-app_clt_sec="tst_ico_uws_client -p 9090"
-
-# test & output result
-echo ""
-tst_no=5
-echo "=== API Test ($tst_no) <<multi server, 2 client>> Start ==="
-exec_test_multi_clt "${app_srv}" "${app_clt}" "${app_clt_sec}" ${tst_no}
-echo "=== API Test ($tst_no) <<multi server, 2 client>> End ==="
-
-
-########################
-#
-# Test End
-#
-########################
 echo "=== API Test End ==="
 echo ""
-

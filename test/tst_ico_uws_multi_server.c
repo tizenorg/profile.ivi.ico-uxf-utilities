@@ -27,7 +27,7 @@
 /* ----------------------------------------------- */
 /* Variable                                        */
 /* ----------------------------------------------- */
-#define SLEEP_TIME  3
+#define SLEEP_TIME  2
 
 struct tst_server_t{
     struct tst_server_t *next;
@@ -193,10 +193,11 @@ static void
 tst_get_uri(struct tst_server_t *srv_t)
 {
     char *ret_str = TEST_OK;
+    char *uri;
 
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
-    char *uri = ico_uws_get_uri(srv_t->context);
+    uri = ico_uws_get_uri(srv_t->context);
     /* mutex unlock */
     pthread_mutex_unlock(&multi_mutex);
     if (strcmp(uri, srv_t->uri) != 0) {
@@ -321,7 +322,8 @@ static void
 tst_unset_evt_callback(struct tst_server_t *srv_t)
 {
     char *ret_str = TEST_OK;
-    
+    char *uri;
+
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
     /* unset callback */
@@ -334,8 +336,14 @@ tst_unset_evt_callback(struct tst_server_t *srv_t)
 
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
+
     /* occurs the error event */
-    (void)ico_uws_get_uri(NULL);
+    printf("-- Occurs the error event to test unset_event_cb\n");
+    uri = ico_uws_get_uri(NULL);
+    if (uri == NULL) {
+        printf("-- Error event happened. (ico_uws_get_uri return Errror)\n");
+    }
+
     /* mutex unlock */
     pthread_mutex_unlock(&multi_mutex);
     sleep(SLEEP_TIME);

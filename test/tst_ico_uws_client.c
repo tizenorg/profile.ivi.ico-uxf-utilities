@@ -26,6 +26,7 @@
 /* Variable                                        */
 /* ----------------------------------------------- */
 #define SLEEP_TIME  2
+#define RETRY_NUM   10
 
 /* context */
 static struct ico_uws_context *clt_context;
@@ -134,10 +135,19 @@ static void
 tst_create_context(char *uri)
 {
     char *ret_str = TEST_OK;
+    int id;
 
     clt_context = ico_uws_create_context(uri, PROTOCOL_NAME);
     if (clt_context == NULL) {
         ret_str = TEST_NG;
+        for (id = 0; id < RETRY_NUM; id++) {
+            clt_context = ico_uws_create_context(uri, PROTOCOL_NAME);
+            if (clt_context != NULL) {
+                ret_str = TEST_OK;
+                break;
+            }
+            sleep(0.01);
+        }
     }
     dbg_print("ico_uws_create_context (client) : %s\n", ret_str);
 
@@ -227,7 +237,7 @@ tst_set_evt_callback(unsigned char *send_data)
 {
     int ret;
     char *ret_str = TEST_OK;
-    
+
     /* set callback */
     set_cb_flag = SET_FLAG;
     ret = ico_uws_set_event_cb(clt_context, tst_uws_callback,
@@ -249,14 +259,20 @@ static void
 tst_unset_evt_callback()
 {
     char *ret_str = TEST_OK;
-    
+    char *uri;
+
     /* unset callback */
     ico_uws_unset_event_cb(clt_context);
     set_cb_flag = UNSET_FLAG;
     num_call_cb = 0;
 
     /* occurs the error event */
-    (void)ico_uws_get_uri(NULL);
+    printf("-- Occurs the error event to test unset_event_cb\n");
+    uri = ico_uws_get_uri(NULL);
+    if (uri == NULL) {
+        printf("-- Error event happened. (ico_uws_get_uri return Errror)\n");
+    }
+
     sleep(SLEEP_TIME);
     if (num_call_cb > 0) {
         ret_str = TEST_NG;

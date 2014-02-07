@@ -1,3 +1,7 @@
+* Fri Feb 07 2014 Shibata Makoto <shibata@mac.tec.toyota.co.jp> accepted/tizen/ivi/release/20140108.220745@bf8600c
+- 0.9.7 release
+-- bugfix: a package test stops on the way
+
 * Thu Dec 26 2013 Shibata Makoto <shibata@mac.tec.toyota.co.jp> submit/tizen/20131219.041934@fb2d235
 - 0.9.06 release
 -- revise: add manifest file for SMACK label setting.

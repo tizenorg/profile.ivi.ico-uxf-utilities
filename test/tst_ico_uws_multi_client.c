@@ -27,7 +27,8 @@
 /* ----------------------------------------------- */
 /* Variable                                        */
 /* ----------------------------------------------- */
-#define SLEEP_TIME  3
+#define SLEEP_TIME  2
+#define RETRY_NUM   10
 
 struct tst_client_t{
     struct tst_client_t *next;
@@ -163,6 +164,7 @@ static void
 tst_create_context(struct tst_client_t *clt_t)
 {
     char *ret_str = TEST_OK;
+    int id;
 
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
@@ -171,6 +173,18 @@ tst_create_context(struct tst_client_t *clt_t)
     pthread_mutex_unlock(&multi_mutex);
     if (clt_t->context == NULL) {
         ret_str = TEST_NG;
+        for (id = 0; id < RETRY_NUM; id++) {
+            /* mutex lock */
+            pthread_mutex_lock(&multi_mutex);
+            clt_t->context = ico_uws_create_context(clt_t->uri, PROTOCOL_NAME);
+            /* mutex unlock */
+            pthread_mutex_unlock(&multi_mutex);
+            if (clt_t->context != NULL) {
+                ret_str = TEST_OK;
+                break;
+            }
+            sleep(0.01);
+        }
     }
     dbg_print("ico_uws_create_context (client %d) : %s\n",
               clt_t->id, ret_str);
@@ -204,10 +218,11 @@ static void
 tst_get_uri(struct tst_client_t *clt_t)
 {
     char *ret_str = TEST_OK;
+    char *uri;
 
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
-    char *uri = ico_uws_get_uri(clt_t->context);
+    uri = ico_uws_get_uri(clt_t->context);
     /* mutex unlock */
     pthread_mutex_unlock(&multi_mutex);
     if (strcmp(uri, clt_t->uri) != 0) {
@@ -332,7 +347,8 @@ static void
 tst_unset_evt_callback(struct tst_client_t *clt_t)
 {
     char *ret_str = TEST_OK;
-    
+    char *uri;
+
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
     /* unset callback */
@@ -345,8 +361,14 @@ tst_unset_evt_callback(struct tst_client_t *clt_t)
 
     /* mutex lock */
     pthread_mutex_lock(&multi_mutex);
+
     /* occurs the error event */
-    (void)ico_uws_get_uri(NULL);
+    printf("-- Occurs the error event to test unset_event_cb\n");
+    uri = ico_uws_get_uri(NULL);
+    if (uri == NULL) {
+        printf("-- Error event happened. (ico_uws_get_uri return Errror)\n");
+    }
+
     /* mutex unlock */
     pthread_mutex_unlock(&multi_mutex);
     sleep(SLEEP_TIME);
