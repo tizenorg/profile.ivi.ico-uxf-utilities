@@ -1,4 +1,3 @@
-#include <Elementary.h>
 #include <E_DBus.h>
 #include <stdio.h>
 

@@ -10,10 +10,7 @@ Source0:    %{name}-%{version}.tar.bz2
 BuildRequires: pkgconfig(libwebsockets) >= 1.2
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(glib-2.0)
-BuildRequires: pkgconfig(ecore)
-BuildRequires: pkgconfig(elementary)
 BuildRequires: pkgconfig(edbus)
-BuildRequires: pkgconfig(appcore-efl)
 Requires(post): /usr/bin/mkdir
 Requires(post): /usr/bin/chmod
 Requires: automotive-message-broker >= 0.10.803
