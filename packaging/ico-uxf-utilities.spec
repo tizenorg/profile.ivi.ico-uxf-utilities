@@ -1,10 +1,9 @@
 Name:       ico-uxf-utilities
 Summary:    Common utilities for ico uifw
 Version:    0.9.07
-Release:    1.1
+Release:    0
 Group:      Automotive/Libraries
 License:    Apache-2.0
-URL:        ""
 Source0:    %{name}-%{version}.tar.bz2
 
 BuildRequires: pkgconfig(libwebsockets) >= 1.2
@@ -16,7 +15,7 @@ Requires(post): /usr/bin/chmod
 Requires: automotive-message-broker >= 0.10.803
 
 %description
-common utilities for ico uifw.
+common utilities for ico uifw package.
 
 %package devel
 Summary:  Development files for %{name}
@@ -31,10 +30,8 @@ Development files for inter application communications.
 %setup -q -n %{name}-%{version}
 
 %build
-%autogen
-
-%configure
-make %{?_smp_mflags}
+%reconfigure
+%__make %{?_smp_mflags}
 
 %install
 %make_install
